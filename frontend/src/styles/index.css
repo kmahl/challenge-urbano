@@ -2,31 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-primary: #c1292e;
+  --brand-background: #ffffff;
+  --brand-active: #c1292e;
+  --brand-header-background: #e2e1e1;
+  --primary-red: #c1292e;
+  --red-hover: #a01f23;
+  --primary-white: #ffffff;
+  --white-hover: #f2f2f2;
+}
+
 @layer base {
   html,
   body,
   #root {
     @apply h-full;
+    font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Nunito Sans', sans-serif;
   }
   h1 {
     @apply text-2xl;
+    font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Nunito Sans', sans-serif;
+    font-weight: 700;
   }
   h2 {
     @apply text-xl;
+    font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Nunito Sans', sans-serif;
+    font-weight: 600;
   }
   h3 {
     @apply text-lg;
+    font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Nunito Sans', sans-serif;
+    font-weight: 600;
   }
   a {
-    @apply text-blue-600 underline;
+    @apply underline;
+    color: var(--brand-primary);
+  }
+  a:hover {
+    color: var(--red-hover);
   }
 }
 
 @layer components {
   .btn {
-    @apply p-3 bg-blue-500 rounded-md focus:outline-none text-white;
-    @apply hover:bg-blue-700 transition-all;
+    @apply p-3 rounded-md focus:outline-none text-white;
+    @apply transition-all;
     @apply focus:ring disabled:opacity-50;
+    background-color: var(--brand-primary);
+    font-weight: 500;
+  }
+  .btn:hover:not(:disabled) {
+    background-color: var(--red-hover);
   }
   .btn.danger {
     @apply bg-red-500 hover:bg-red-700;
@@ -35,16 +62,20 @@
     @apply rounded-md border-gray-300 transition-colors disabled:opacity-50;
   }
   .card {
-    @apply p-5 rounded-md bg-white border;
+    @apply p-5 rounded-md border;
+    background-color: var(--brand-background);
   }
   .table-container {
     @apply border rounded-lg mt-5 shadow overflow-x-auto;
+    background-color: var(--brand-background);
   }
   .table-filter {
     @apply flex flex-col lg:flex-row gap-5 rounded-lg p-3 shadow overflow-x-auto border;
+    background-color: var(--brand-background);
   }
   .sidebar {
-    @apply fixed h-full w-72 p-5 shadow flex flex-col transform -translate-x-72 bg-white lg:translate-x-0 transition-transform;
+    @apply fixed h-full w-72 p-5 shadow flex flex-col transform -translate-x-72 lg:translate-x-0 transition-transform;
+    background-color: var(--brand-header-background);
   }
   .sidebar.show {
     @apply translate-x-0 !important;
