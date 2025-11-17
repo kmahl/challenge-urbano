@@ -1,4 +1,4 @@
-## La lista de cambios y decisiones tomadas se encuentran en el archivo [fixes-realizados.md](./fixes-realizados.md)
+## La lista de cambios y decisiones tomadas se encuentran en el archivo [fixes-realizados.md](https://github.com/kmahl/challenge-urbano/blob/master/fixes-realizados.md)
 
 # Admin Panel Project
 
