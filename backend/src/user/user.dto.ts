@@ -1,10 +1,13 @@
+import { PartialType } from '@nestjs/mapped-types';
 import {
   IsAlphanumeric,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Matches,
   MinLength,
 } from 'class-validator';
 
@@ -24,42 +27,26 @@ export class CreateUserDto {
   username: string;
 
   @IsNotEmpty()
-  @MinLength(6)
-  @IsAlphanumeric()
+  @MinLength(8)
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#.\-_])/,
+    {
+      message:
+        'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character (@$!%*?&#.-_)',
+    },
+  )
   password: string;
 
   @IsEnum(Role)
   role: Role;
 }
 
-export class UpdateUserDto {
+export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
-  @IsNotEmpty()
-  @IsString()
-  firstName?: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @IsString()
-  lastName?: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @IsAlphanumeric()
-  username?: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @MinLength(6)
-  @IsAlphanumeric()
-  password?: string;
-
-  @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
-
-  @IsOptional()
-  @IsNotEmpty()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  version?: number;
 }
