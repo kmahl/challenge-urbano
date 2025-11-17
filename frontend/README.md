@@ -1,5 +1,3 @@
-## La lista de cambios y decisiones tomadas se encuentran en el archivo [fixes-realizados.md](../fixes-realizados.md)
-
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
