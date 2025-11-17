@@ -1,4 +1,4 @@
-** Fixes aplicados ** 
+## Fixes aplicados 
 - Saque el dist del .dockerignore en BE
 - Saque el build del .dockerignore en FE
 - Tuve que sumar en eslint "endOfLine":"auto" en el archivo de config del .prettierrc para el ajuste en algunos archivos faltaba el ultimo salto de linea
@@ -10,7 +10,7 @@
 - Migre de ES2017 a ES2021 para poder usar tipado moderno
 - Sume los decoradores IsOptional y IsString en las clases query de cada entidad para fixear los filtros de busqueda
 
-** Seguridad: ** 
+## Seguridad: 
 - Implemente en el BE, seguridades basicas: 
     - CORS (protección por dominio para aceptar request que vengan del FE)
     - helmet (seguridad a los headers)
@@ -24,7 +24,7 @@
 - Elimine en el FE un log del token
 
 
-** Mejoras **
+## Mejoras
 - Sume el decorador unique al campo username de la entidad de usuarios
 - Mejore los DTO's usando PartialType para simplificar la definición de los campos
 - Centralice constantes
@@ -34,7 +34,7 @@
 - Elimine el refetchInterval ya que esto puede generar muchisimos costos, impide el uso de ratelimits para seguridad y no es una practica apropiada, para efectos del challenge implemente invalidateQueries para mantener actualizadas las tablas que el usuario va modificando PERO no va a ver lo que otros usuarios agreguen/actualicen para poder obtener esto sin tanto costo, lo ideal sería implementar un websocket.
 - Implemente una lib llamada debounce para aplicarlo a los filtros y así no llamar al BE cada vez que se ingresa un valor en los inputs
 
-** Mejoras que no implemente pero que haría en un proyecto real: **
+## Mejoras que no implemente pero que haría en un proyecto real:
 - Sacar el synchronize: true y usar typeorm migrations para crear las DB en prod 
 - Implementar campos de auditoría en cada tabla (updateAt, createdAt)
 - Crear indices
