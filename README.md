@@ -57,7 +57,7 @@ Application generates 2 tokens on login. Access token and refresh token. Access 
 On the first run, application inserts a new admin to the database.
 
 - **username**: admin
-- **password**: admin123
+- **password**: Admin123.
 
 # How to setup
 
