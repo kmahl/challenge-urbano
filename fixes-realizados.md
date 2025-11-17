@@ -33,6 +33,7 @@
 - Sume una estrategia para actualizaciones de datos llamada "Optimistic locking" para evitar el "Lost update" que basicamente sucede cuando 2 personas están editando el mismo registro y se pisan
 - Elimine el refetchInterval ya que esto puede generar muchisimos costos, impide el uso de ratelimits para seguridad y no es una practica apropiada, para efectos del challenge implemente invalidateQueries para mantener actualizadas las tablas que el usuario va modificando PERO no va a ver lo que otros usuarios agreguen/actualicen para poder obtener esto sin tanto costo, lo ideal sería implementar un websocket.
 - Implemente una lib llamada debounce para aplicarlo a los filtros y así no llamar al BE cada vez que se ingresa un valor en los inputs
+- Fixee un test que fallaba en BE
 
 ## Mejoras que no implemente pero que haría en un proyecto real:
 - Sacar el synchronize: true y usar typeorm migrations para crear las DB en prod 
@@ -45,3 +46,4 @@
 - Los request se podría implementar una lib que valida firma del json (joi)
 - Implementar un websocket para mantener actualizadas las tablas en tiempo real en caso que el admin sea utilizado por muchas personas y tengan un gran trafico o sea critico ver los datos en tiempo real (lo nombre tambien en mejoras)
 - Migrar a Vite como builder
+- Sumaría test unitarios y e2e en FE y cubriría más casos y archivos en BE
