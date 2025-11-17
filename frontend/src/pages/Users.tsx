@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Loader, Plus, X } from 'react-feather';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
+import { useDebounce } from 'use-debounce';
 
 import Layout from '../components/layout';
 import Modal from '../components/shared/Modal';
@@ -12,29 +13,31 @@ import userService from '../services/UserService';
 
 export default function Users() {
   const { authenticatedUser } = useAuth();
+  const queryClient = useQueryClient();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [role, setRole] = useState('');
 
+  const [debouncedFirstName] = useDebounce(firstName, 500);
+  const [debouncedLastName] = useDebounce(lastName, 500);
+  const [debouncedUsername] = useDebounce(username, 500);
+
   const [addUserShow, setAddUserShow] = useState<boolean>(false);
   const [error, setError] = useState<string>();
 
   const { data, isLoading } = useQuery(
-    ['users', firstName, lastName, username, role],
+    ['users', debouncedFirstName, debouncedLastName, debouncedUsername, role],
     async () => {
       return (
         await userService.findAll({
-          firstName: firstName || undefined,
-          lastName: lastName || undefined,
-          username: username || undefined,
+          firstName: debouncedFirstName || undefined,
+          lastName: debouncedLastName || undefined,
+          username: debouncedUsername || undefined,
           role: role || undefined,
         })
       ).filter((user) => user.id !== authenticatedUser.id);
-    },
-    {
-      refetchInterval: 1000,
     },
   );
 
@@ -51,6 +54,7 @@ export default function Users() {
       setAddUserShow(false);
       setError(null);
       reset();
+      queryClient.invalidateQueries(['users']);
     } catch (error) {
       setError(error.response.data.message);
     }
@@ -160,9 +164,9 @@ export default function Users() {
             type="password"
             className="input"
             required
-            placeholder="Password (min 6 characters)"
+            placeholder="Password (min 8 characters)"
             disabled={isSubmitting}
-            {...register('password')}
+            {...register('password', { minLength: 8 })}
           />
           <select
             className="input"

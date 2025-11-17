@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Loader, Plus, X } from 'react-feather';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router';
+import { useDebounce } from 'use-debounce';
 
 import ContentsTable from '../components/content/ContentsTable';
 import Layout from '../components/layout';
@@ -15,9 +16,14 @@ import courseService from '../services/CourseService';
 export default function Course() {
   const { id } = useParams<{ id: string }>();
   const { authenticatedUser } = useAuth();
+  const queryClient = useQueryClient();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+
+  const [debouncedName] = useDebounce(name, 500);
+  const [debouncedDescription] = useDebounce(description, 500);
+
   const [addContentShow, setAddContentShow] = useState<boolean>(false);
   const [error, setError] = useState<string>();
 
@@ -31,15 +37,12 @@ export default function Course() {
   } = useForm<CreateContentRequest>();
 
   const { data, isLoading } = useQuery(
-    [`contents-${id}`, name, description],
+    ['contents', id, debouncedName, debouncedDescription],
     async () =>
       contentService.findAll(id, {
-        name: name || undefined,
-        description: description || undefined,
+        name: debouncedName || undefined,
+        description: debouncedDescription || undefined,
       }),
-    {
-      refetchInterval: 1000,
-    },
   );
 
   const saveCourse = async (createContentRequest: CreateContentRequest) => {
@@ -48,6 +51,7 @@ export default function Course() {
       setAddContentShow(false);
       reset();
       setError(null);
+      queryClient.invalidateQueries(['contents', id]);
     } catch (error) {
       setError(error.response.data.message);
     }

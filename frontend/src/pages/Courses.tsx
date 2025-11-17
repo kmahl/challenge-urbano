@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Loader, Plus, X } from 'react-feather';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
+import { useDebounce } from 'use-debounce';
 
 import CoursesTable from '../components/courses/CoursesTable';
 import Layout from '../components/layout';
@@ -11,23 +12,24 @@ import CreateCourseRequest from '../models/course/CreateCourseRequest';
 import courseService from '../services/CourseService';
 
 export default function Courses() {
+  const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+
+  const [debouncedName] = useDebounce(name, 500);
+  const [debouncedDescription] = useDebounce(description, 500);
 
   const [addCourseShow, setAddCourseShow] = useState<boolean>(false);
   const [error, setError] = useState<string>();
 
   const { authenticatedUser } = useAuth();
   const { data, isLoading } = useQuery(
-    ['courses', name, description],
+    ['courses', debouncedName, debouncedDescription],
     () =>
       courseService.findAll({
-        name: name || undefined,
-        description: description || undefined,
+        name: debouncedName || undefined,
+        description: debouncedDescription || undefined,
       }),
-    {
-      refetchInterval: 1000,
-    },
   );
 
   const {
@@ -43,6 +45,7 @@ export default function Courses() {
       setAddCourseShow(false);
       reset();
       setError(null);
+      queryClient.invalidateQueries(['courses']);
     } catch (error) {
       setError(error.response.data.message);
     }
