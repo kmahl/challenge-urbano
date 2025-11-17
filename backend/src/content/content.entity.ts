@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  VersionColumn,
 } from 'typeorm';
 
 import { Course } from '../course/course.entity';
@@ -17,7 +18,7 @@ export class Content extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ type: 'text' })
   description: string;
 
   @Column()
@@ -29,4 +30,7 @@ export class Content extends BaseEntity {
   @ManyToOne(() => Course, (course) => course.contents, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'courseId' })
   course: Course;
+
+  @VersionColumn()
+  version: number;
 }

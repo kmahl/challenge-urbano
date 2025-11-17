@@ -4,6 +4,8 @@ import { ILike } from 'typeorm';
 import { CreateCourseDto, UpdateCourseDto } from './course.dto';
 import { Course } from './course.entity';
 import { CourseQuery } from './course.query';
+import { escapeLikePattern } from '../utils/sql.util';
+import { validateOptimisticLock } from '../utils/optimistic-locking.util';
 
 @Injectable()
 export class CourseService {
@@ -16,15 +18,16 @@ export class CourseService {
 
   async findAll(courseQuery: CourseQuery): Promise<Course[]> {
     Object.keys(courseQuery).forEach((key) => {
-      courseQuery[key] = ILike(`%${courseQuery[key]}%`);
+      const sanitized = escapeLikePattern(String(courseQuery[key]));
+      courseQuery[key] = ILike(`%${sanitized}%`);
     });
-    return await Course.find({
+    return (await Course.find({
       where: courseQuery,
       order: {
         name: 'ASC',
         description: 'ASC',
       },
-    });
+    })) as Course[];
   }
 
   async findById(id: string): Promise<Course> {
@@ -40,7 +43,14 @@ export class CourseService {
 
   async update(id: string, updateCourseDto: UpdateCourseDto): Promise<Course> {
     const course = await this.findById(id);
-    return await Course.create({ id: course.id, ...updateCourseDto }).save();
+
+    // Optimistic locking: Check version if provided
+    validateOptimisticLock(course.version, updateCourseDto.version);
+
+    // Remove version from DTO to let TypeORM auto-increment it
+    const { version, ...dataToUpdate } = updateCourseDto;
+
+    return await Course.create({ id: course.id, ...dataToUpdate }).save();
   }
 
   async delete(id: string): Promise<string> {

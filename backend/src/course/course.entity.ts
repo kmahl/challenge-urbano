@@ -4,6 +4,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  VersionColumn,
 } from 'typeorm';
 
 import { Content } from '../content/content.entity';
@@ -16,7 +17,7 @@ export class Course extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ type: 'text' })
   description: string;
 
   @Column()
@@ -24,4 +25,7 @@ export class Course extends BaseEntity {
 
   @OneToMany(() => Content, (content) => content.course)
   contents: Content[];
+
+  @VersionColumn()
+  version: number;
 }

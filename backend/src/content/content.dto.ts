@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateContentDto {
   @IsNotEmpty()
@@ -10,14 +11,8 @@ export class CreateContentDto {
   description: string;
 }
 
-export class UpdateContentDto {
+export class UpdateContentDto extends PartialType(CreateContentDto) {
   @IsOptional()
-  @IsNotEmpty()
-  @IsString()
-  name?: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @IsString()
-  description?: string;
+  @IsNumber()
+  version?: number;
 }

@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, VersionColumn } from 'typeorm';
 
 import { Role } from '../enums/role.enum';
 
@@ -14,7 +14,7 @@ export class User extends BaseEntity {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column()
@@ -30,4 +30,7 @@ export class User extends BaseEntity {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @VersionColumn()
+  version: number;
 }

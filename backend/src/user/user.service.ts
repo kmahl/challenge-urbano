@@ -5,28 +5,39 @@ import { ILike } from 'typeorm';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';
 import { UserQuery } from './user.query';
+import { escapeLikePattern } from '../utils/sql.util';
+import { BCRYPT_ROUNDS } from '../constants/security.constants';
+import { validateOptimisticLock } from '../utils/optimistic-locking.util';
 
 @Injectable()
 export class UserService {
-  async save(createUserDto: CreateUserDto): Promise<User> {
-    const user = await this.findByUsername(createUserDto.username);
+  private async validateUniqueUsername(
+    username: string,
+    excludeId?: string,
+  ): Promise<void> {
+    const existingUser = await this.findByUsername(username);
 
-    if (user) {
+    if (existingUser && existingUser.id !== excludeId) {
       throw new HttpException(
-        `User with username ${createUserDto.username} is already exists`,
+        `User with username ${username} already exists`,
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  async save(createUserDto: CreateUserDto): Promise<User> {
+    await this.validateUniqueUsername(createUserDto.username);
 
     const { password } = createUserDto;
-    createUserDto.password = await bcrypt.hash(password, 10);
+    createUserDto.password = await bcrypt.hash(password, BCRYPT_ROUNDS);
     return User.create(createUserDto).save();
   }
 
   async findAll(userQuery: UserQuery): Promise<User[]> {
     Object.keys(userQuery).forEach((key) => {
       if (key !== 'role') {
-        userQuery[key] = ILike(`%${userQuery[key]}%`);
+        const sanitized = escapeLikePattern(String(userQuery[key]));
+        userQuery[key] = ILike(`%${sanitized}%`);
       }
     });
 
@@ -36,7 +47,7 @@ export class UserService {
         firstName: 'ASC',
         lastName: 'ASC',
       },
-    });
+    }) as Promise<User[]>;
   }
 
   async findById(id: string): Promise<User> {
@@ -59,25 +70,21 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const currentUser = await this.findById(id);
 
-    /* If username is same as before, delete it from the dto */
-    if (currentUser.username === updateUserDto.username) {
-      delete updateUserDto.username;
+    // Optimistic locking: Check version if provided
+    validateOptimisticLock(currentUser.version, updateUserDto.version);
+
+    if (updateUserDto.username && updateUserDto.username !== currentUser.username) {
+      await this.validateUniqueUsername(updateUserDto.username, id);
     }
 
     if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, BCRYPT_ROUNDS);
     }
 
-    if (updateUserDto.username) {
-      if (await this.findByUsername(updateUserDto.username)) {
-        throw new HttpException(
-          `User with username ${updateUserDto.username} is already exists`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-    }
+    // Remove version from DTO to let TypeORM auto-increment it
+    const { version, ...dataToUpdate } = updateUserDto;
 
-    return User.create({ id, ...updateUserDto }).save();
+    return User.create({ id, ...dataToUpdate }).save();
   }
 
   async delete(id: string): Promise<string> {
@@ -93,7 +100,7 @@ export class UserService {
   async setRefreshToken(id: string, refreshToken: string): Promise<void> {
     const user = await this.findById(id);
     await User.update(user, {
-      refreshToken: refreshToken ? await bcrypt.hash(refreshToken, 10) : null,
+      refreshToken: refreshToken ? await bcrypt.hash(refreshToken, BCRYPT_ROUNDS) : null,
     });
   }
 }

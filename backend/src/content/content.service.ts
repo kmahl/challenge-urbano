@@ -5,6 +5,8 @@ import { CourseService } from '../course/course.service';
 import { CreateContentDto, UpdateContentDto } from './content.dto';
 import { Content } from './content.entity';
 import { ContentQuery } from './content.query';
+import { escapeLikePattern } from '../utils/sql.util';
+import { validateOptimisticLock } from '../utils/optimistic-locking.util';
 
 @Injectable()
 export class ContentService {
@@ -26,16 +28,17 @@ export class ContentService {
 
   async findAll(contentQuery: ContentQuery): Promise<Content[]> {
     Object.keys(contentQuery).forEach((key) => {
-      contentQuery[key] = ILike(`%${contentQuery[key]}%`);
+      const sanitized = escapeLikePattern(String(contentQuery[key]));
+      contentQuery[key] = ILike(`%${sanitized}%`);
     });
 
-    return await Content.find({
+    return (await Content.find({
       where: contentQuery,
       order: {
         name: 'ASC',
         description: 'ASC',
       },
-    });
+    })) as Content[];
   }
 
   async findById(id: string): Promise<Content> {
@@ -67,7 +70,8 @@ export class ContentService {
     contentQuery: ContentQuery,
   ): Promise<Content[]> {
     Object.keys(contentQuery).forEach((key) => {
-      contentQuery[key] = ILike(`%${contentQuery[key]}%`);
+      const sanitized = escapeLikePattern(String(contentQuery[key]));
+      contentQuery[key] = ILike(`%${sanitized}%`);
     });
     return await Content.find({
       where: { courseId, ...contentQuery },
@@ -84,7 +88,14 @@ export class ContentService {
     updateContentDto: UpdateContentDto,
   ): Promise<Content> {
     const content = await this.findByCourseIdAndId(courseId, id);
-    return await Content.create({ id: content.id, ...updateContentDto }).save();
+
+    // Optimistic locking: Check version if provided
+    validateOptimisticLock(content.version, updateContentDto.version);
+
+    // Remove version from DTO to let TypeORM auto-increment it
+    const { version, ...dataToUpdate } = updateContentDto;
+
+    return await Content.create({ id: content.id, ...dataToUpdate }).save();
   }
 
   async delete(courseId: string, id: string): Promise<string> {
